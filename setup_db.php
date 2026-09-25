@@ -10,14 +10,17 @@ $name = getenv('MYSQLDATABASE') ?: getenv('DB_NAME') ?: 'db_eabsensi';
 $port = (int)(getenv('MYSQLPORT') ?: 3306);
 
 // Tunggu database siap (penting saat deploy: MySQL butuh waktu start)
+mysqli_report(MYSQLI_REPORT_OFF);
 $db = null;
 for ($i = 1; $i <= 30; $i++) {
-  $db = @new mysqli($host, $user, $pass, '', $port);
-  if (!$db->connect_error) break;
-  if (php_sapi_name() === 'cli') echo "Menunggu MySQL... ($i)\n";
+  try {
+    $db = @new mysqli($host, $user, $pass, '', $port);
+    if ($db && !$db->connect_error) break;
+  } catch (Throwable $e) { $db = null; }
+  if (php_sapi_name() === 'cli') echo "Menunggu MySQL $host... ($i)\n";
   sleep(2);
 }
-if ($db->connect_error) die("GAGAL konek MySQL: {$db->connect_error}\nPastikan MySQL sudah jalan.\n");
+if (!$db || $db->connect_error) die("GAGAL konek MySQL ke $host:$port. Pastikan MySQL sudah jalan.\n");
 
 $db->query("CREATE DATABASE IF NOT EXISTS `$name` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 $db->select_db($name);
