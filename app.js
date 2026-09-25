@@ -133,9 +133,18 @@ async function muatSiswa() {
     const r = await jget(`${API}?action=siswa&kelas=${encodeURIComponent(kelas)}&q=${encodeURIComponent(q)}`);
     document.getElementById('siswa-sub').textContent = `${(r.data || []).length} siswa • Kelas ${kelas}`;
     document.getElementById('tb-siswa').innerHTML = (r.data || []).map((s, i) =>
-      `<tr><td>${i + 1}</td><td><b>${s.nama_siswa}</b></td><td>${s.nis}</td><td>${s.jenis_kelamin}</td><td>${s.no_hp_ortu || '-'}</td><td>${s.nama_kelas}</td></tr>`).join('')
-      || '<tr><td colspan="6">Tidak ada data.</td></tr>';
+      `<tr><td>${i + 1}</td><td><b>${s.nama_siswa}</b></td><td>${s.nis}</td><td>${s.jenis_kelamin}</td><td>${s.no_hp_ortu || '-'}</td><td>${s.nama_kelas}</td><td><button class="b-ghost" style="padding:6px 10px;font-size:12px" onclick="hapusSiswa(${s.id},'${s.nama_siswa.replace(/'/g, '')}')">Hapus</button></td></tr>`).join('')
+      || '<tr><td colspan="7">Tidak ada data.</td></tr>';
   } catch (e) {}
+}
+
+async function hapusSiswa(id, nama) {
+  if (!confirm(`Hapus ${nama}? Riwayat absensinya ikut terhapus.`)) return;
+  try {
+    const r = await jpost(API + '?action=siswa_hapus', { id });
+    if (!r.ok) { alert(r.msg || 'Gagal menghapus'); return; }
+    muatSiswa(); muatDashboard();
+  } catch (e) { alert('Gagal hubungi server.'); }
 }
 
 async function muatRekap() {

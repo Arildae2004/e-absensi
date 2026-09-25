@@ -87,6 +87,16 @@ if ($action === 'siswa_save') {
   }
 }
 
+// ---------- HAPUS SISWA ----------
+if ($action === 'siswa_hapus') {
+  $id = (int)($body['id'] ?? 0);
+  if (!$id) out(['ok'=>false,'msg'=>'ID tidak valid'], 400);
+  $st = $conn->prepare("DELETE FROM siswa WHERE id=?");
+  $st->bind_param('i', $id); $st->execute();
+  if ($st->affected_rows === 0) out(['ok'=>false,'msg'=>'Siswa tidak ditemukan'], 404);
+  out(['ok'=>true]); // absensi ikut terhapus via FK ON DELETE CASCADE
+}
+
 // ---------- AMBIL ABSENSI ----------
 if ($action === 'absensi_get') {
   $tgl = $_GET['tanggal'] ?? date('Y-m-d'); $kelas = $_GET['kelas'] ?? 'X-1';
