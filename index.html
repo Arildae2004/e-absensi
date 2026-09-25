@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>E-Absensi SMAN 1 Jakarta</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="apple-touch-icon" href="logo-192.png" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#173a5e" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="E-Absensi" />
 <link rel="stylesheet" href="style.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -81,13 +88,13 @@
       <div class="cols">
         <div class="panel">
           <div class="panel-h"><h3 id="dash-tabel-judul">Absensi — X-1</h3><a href="#" onclick="pindah('absensi');return false">Lihat semua</a></div>
-          <table><thead><tr><th>NIS</th><th>Nama</th><th>Status</th><th>Ket.</th></tr></thead>
-          <tbody id="tb-dash"><tr><td colspan="4" class="muted2">Memuat…</td></tr></tbody></table>
+          <div class="table-scroll"><table><thead><tr><th>NIS</th><th>Nama</th><th>Status</th><th>Ket.</th></tr></thead>
+          <tbody id="tb-dash"><tr><td colspan="4" class="muted2">Memuat…</td></tr></tbody></table></div>
         </div>
         <div class="panel">
           <div class="panel-h"><h3>Rekap Bulan Ini</h3></div>
-          <table><thead><tr><th>Nama</th><th>%</th><th>Status</th></tr></thead>
-          <tbody id="tb-mini-rekap"><tr><td colspan="3" class="muted2">Memuat…</td></tr></tbody></table>
+          <div class="table-scroll"><table><thead><tr><th>Nama</th><th>%</th><th>Status</th></tr></thead>
+          <tbody id="tb-mini-rekap"><tr><td colspan="3" class="muted2">Memuat…</td></tr></tbody></table></div>
         </div>
       </div>
     </section>
@@ -98,8 +105,8 @@
           <div><h3 id="abs-judul">Absensi Kelas X-1</h3><p class="sub2" id="abs-sub">–</p></div>
           <div class="tools"><button class="b-ghost" onclick="semuaHadir()">Semua Hadir</button><button class="b-ghost" onclick="hapusAbsensi()">Hapus Hari Ini</button><button class="b-dark" onclick="simpanAbsensi()">Simpan Absensi</button></div>
         </div>
-        <table><thead><tr><th style="width:40px">No</th><th>Nama Siswa</th><th>NIS</th><th style="width:280px">Kehadiran</th><th>Keterangan</th></tr></thead>
-        <tbody id="tb-absensi"><tr><td colspan="5" class="muted2">Memuat…</td></tr></tbody></table>
+        <div class="table-scroll"><table><thead><tr><th style="width:40px">No</th><th>Nama Siswa</th><th>NIS</th><th style="width:280px">Kehadiran</th><th>Keterangan</th></tr></thead>
+        <tbody id="tb-absensi"><tr><td colspan="5" class="muted2">Memuat…</td></tr></tbody></table></div>
         <p class="note" id="abs-msg"></p>
       </div>
     </section>
@@ -118,8 +125,8 @@
           <button class="b-dark" onclick="tambahSiswa()">Simpan</button>
           <span id="ns-msg" class="sub2"></span>
         </div>
-        <table><thead><tr><th>No</th><th>Nama</th><th>NIS</th><th>L/P</th><th>No. HP Ortu</th><th>Kelas</th></tr></thead>
-        <tbody id="tb-siswa"><tr><td colspan="6" class="muted2">Memuat…</td></tr></tbody></table>
+        <div class="table-scroll"><table><thead><tr><th>No</th><th>Nama</th><th>NIS</th><th>L/P</th><th>No. HP Ortu</th><th>Kelas</th></tr></thead>
+        <tbody id="tb-siswa"><tr><td colspan="6" class="muted2">Memuat…</td></tr></tbody></table></div>
       </div>
     </section>
 
@@ -129,8 +136,8 @@
           <div><h3>Rekap Bulanan</h3><p class="sub2" id="rekap-sub">–</p></div>
           <div class="tools"><input id="rekap-bulan" type="month" value="2026-09" onchange="muatRekap()" /><button class="b-ghost" onclick="exportExcel()">Export Excel</button><button class="b-ghost" onclick="window.print()">Cetak</button></div>
         </div>
-        <table id="tbl-rekap"><thead><tr><th>Nama</th><th>H</th><th>I</th><th>S</th><th>A</th><th>%</th><th>Status</th></tr></thead>
-        <tbody id="tb-rekap"><tr><td colspan="7" class="muted2">Memuat…</td></tr></tbody></table>
+        <div class="table-scroll"><table id="tbl-rekap"><thead><tr><th>Nama</th><th>H</th><th>I</th><th>S</th><th>A</th><th>%</th><th>Status</th></tr></thead>
+        <tbody id="tb-rekap"><tr><td colspan="7" class="muted2">Memuat…</td></tr></tbody></table></div>
       </div>
     </section>
 
