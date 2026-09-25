@@ -121,6 +121,17 @@ if ($action === 'absensi_save') {
   } catch (Throwable $e) { $conn->rollback(); out(['ok'=>false,'msg'=>$e->getMessage()], 500); }
 }
 
+// ---------- HAPUS ABSENSI (per tanggal+kelas, untuk betulkan salah input) ----------
+if ($action === 'absensi_hapus') {
+  $tgl = $body['tanggal'] ?? ''; $kelas = $body['kelas'] ?? ''; $guru = (int)($body['id_guru'] ?? 0);
+  if (!$tgl || !$kelas || !$guru) out(['ok'=>false,'msg'=>'Data tidak lengkap'], 400);
+  $kid = kelasId($conn, $kelas);
+  if (!$kid) out(['ok'=>false,'msg'=>'Kelas tidak dikenal'], 400);
+  $st = $conn->prepare("DELETE FROM absensi WHERE tanggal=? AND id_kelas=?");
+  $st->bind_param('si', $tgl, $kid); $st->execute();
+  out(['ok'=>true,'dihapus'=>$st->affected_rows]);
+}
+
 // ---------- REKAP ----------
 if ($action === 'rekap') {
   $bulan = $_GET['bulan'] ?? date('Y-m'); $kelas = $_GET['kelas'] ?? 'SEMUA';

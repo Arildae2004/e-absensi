@@ -106,6 +106,16 @@ function semuaHadir() {
   ABSENSI.forEach(s => s.status = 'H');
   document.getElementById('tb-absensi').innerHTML = ABSENSI.map(barisAbsen).join('');
 }
+async function hapusAbsensi() {
+  let { kelas, tgl } = F(); if (kelas === 'SEMUA') kelas = 'X-1';
+  if (!confirm(`Hapus seluruh absensi kelas ${kelas} tanggal ${tgl}?`)) return;
+  const m = document.getElementById('abs-msg'); m.textContent = 'Menghapus…';
+  try {
+    const r = await jpost(API + '?action=absensi_hapus', { tanggal: tgl, kelas, id_guru: GURU.id });
+    m.textContent = r.ok ? `Dihapus ${r.dihapus} baris.` : ('Gagal: ' + r.msg);
+    muatAbsensi(); muatDashboard();
+  } catch (e) { m.textContent = 'Gagal hubungi server.'; }
+}
 async function simpanAbsensi() {
   let { kelas, tgl } = F(); if (kelas === 'SEMUA') kelas = 'X-1';
   const m = document.getElementById('abs-msg'); m.textContent = 'Menyimpan…';
