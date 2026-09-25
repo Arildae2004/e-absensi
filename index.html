@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>E-Absensi — SMAN 1 Jakarta</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="login" class="login-page">
+  <div class="login-box">
+    <div class="school-head">
+      <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f3eb.png" alt="logo" class="school-logo" />
+      <div><b>SMAN 1 JAKARTA</b><span>Sistem Informasi Absensi Siswa • TP 2025/2026</span></div>
+    </div>
+    <h2>Selamat datang kembali</h2>
+    <p class="sub">Silakan masuk menggunakan akun guru Anda.</p>
+    <label>NIP / Username</label>
+    <input id="in-nip" type="text" value="19870512" />
+    <label>Kata Sandi</label>
+    <input id="in-pass" type="password" value="admin123" />
+    <p id="login-msg" class="hidden" style="color:#b91c1c;font-size:13px"></p>
+    <div class="login-row">
+      <label class="check"><input type="checkbox" checked /> Ingat saya</label>
+      <a href="#">Lupa sandi?</a>
+    </div>
+    <button class="btn-primary" onclick="masuk()">Masuk</button>
+    <p class="help">Demo — NIP <b>19870512</b> / sandi <b>admin123</b>. Hubungi TU untuk akun baru.</p>
+  </div>
+  <p class="foot">© 2025 SMAN 1 Jakarta — Jl. Merdeka No. 10</p>
+</div>
+
+<div id="app" class="hidden">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">S1</div><div><b>E-Absensi</b><span>SMAN 1 Jakarta</span></div></div>
+    <p class="menu-label">MENU UTAMA</p>
+    <nav>
+      <button class="active" data-p="dashboard" onclick="pindah('dashboard')">
+        <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>Dashboard</button>
+      <button data-p="absensi" onclick="pindah('absensi')">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0-2-2V5a2 2 0 0 0-2-2zm-9 14l-5-5 1.4-1.4L10 14.2l7.6-7.6L19 8z"/></svg>Absensi</button>
+      <button data-p="siswa" onclick="pindah('siswa')">
+        <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-8 0a4 4 0 1 0 4-4 4 4 0 0 0-4 4zm8 2c-2.7 0-8 1.3-8 4v3h16v-3c0-2.7-5.3-4-8-4z"/></svg>Data Siswa</button>
+      <button data-p="rekap" onclick="pindah('rekap')">
+        <svg viewBox="0 0 24 24"><path d="M3 3v18h18v-2H5V3zm4 12h3v-6H7zm5 0h3V7h-3zm5 0h3v-9h-3z"/></svg>Rekap</button>
+    </nav>
+    <p class="menu-label">LAINNYA</p>
+    <nav>
+      <button data-p="pengaturan" onclick="pindah('pengaturan')">
+        <svg viewBox="0 0 24 24"><path d="M13 15a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm7.4-4a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L14.9 3h-4l-.4 2.6a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4L6.4 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.6 7.6 0 0 0 1.7-1l2.4 1 2-3.4z"/></svg>Pengaturan</button>
+      <button onclick="keluar()">
+        <svg viewBox="0 0 24 24"><path d="M17 7l-1.4 1.4L18.2 11H8v2h10.2l-2.6 2.6L17 17l5-5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4z"/></svg>Keluar</button>
+    </nav>
+    <div class="user-card"><div class="ava" id="u-ava">RW</div><div><b id="u-nama">—</b><span id="u-kelas">—</span></div></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div><h1 id="judul">Dashboard</h1><p id="sub-tgl">Jumat, 25 September 2026 • Semester Ganjil</p></div>
+      <div class="top-right">
+        <select id="flt-kelas" onchange="muatSemua()"><option>X-1</option><option>XI IPA 1</option><option>XII IPS 1</option><option>SEMUA</option></select>
+        <input id="flt-tgl" type="date" value="2026-09-25" onchange="muatSemua()" />
+      </div>
+    </header>
+
+    <section id="pg-dashboard" class="pg">
+      <div class="alert" id="alert-absen">
+        <b>Memuat status absensi…</b><span></span>
+        <button onclick="pindah('absensi')">Isi Sekarang</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>Total Siswa</span><b id="st-total">–</b><small id="st-total-sub">–</small></div>
+        <div class="stat"><span>Hadir Hari Ini</span><b id="st-hadir">–</b><small class="up" id="st-hadir-sub">–</small></div>
+        <div class="stat"><span>Izin / Sakit</span><b id="st-is">–</b><small id="st-is-sub">–</small></div>
+        <div class="stat"><span>Alpa</span><b id="st-alpa">–</b><small class="down">Perlu tindak lanjut</small></div>
+      </div>
+      <div class="cols">
+        <div class="panel">
+          <div class="panel-h"><h3 id="dash-tabel-judul">Absensi — X-1</h3><a href="#" onclick="pindah('absensi');return false">Lihat semua</a></div>
+          <table><thead><tr><th>NIS</th><th>Nama</th><th>Status</th><th>Ket.</th></tr></thead>
+          <tbody id="tb-dash"><tr><td colspan="4" class="muted2">Memuat…</td></tr></tbody></table>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Rekap Bulan Ini</h3></div>
+          <table><thead><tr><th>Nama</th><th>%</th><th>Status</th></tr></thead>
+          <tbody id="tb-mini-rekap"><tr><td colspan="3" class="muted2">Memuat…</td></tr></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <section id="pg-absensi" class="pg hidden">
+      <div class="panel">
+        <div class="panel-h wrap">
+          <div><h3 id="abs-judul">Absensi Kelas X-1</h3><p class="sub2" id="abs-sub">–</p></div>
+          <div class="tools"><button class="b-ghost" onclick="semuaHadir()">Semua Hadir</button><button class="b-dark" onclick="simpanAbsensi()">Simpan Absensi</button></div>
+        </div>
+        <table><thead><tr><th style="width:40px">No</th><th>Nama Siswa</th><th>NIS</th><th style="width:280px">Kehadiran</th><th>Keterangan</th></tr></thead>
+        <tbody id="tb-absensi"><tr><td colspan="5" class="muted2">Memuat…</td></tr></tbody></table>
+        <p class="note" id="abs-msg"></p>
+      </div>
+    </section>
+
+    <section id="pg-siswa" class="pg hidden">
+      <div class="panel">
+        <div class="panel-h wrap">
+          <div><h3>Data Siswa</h3><p class="sub2" id="siswa-sub">–</p></div>
+          <div class="tools"><input id="siswa-q" class="search" placeholder="Cari nama…" oninput="muatSiswa()" /><button class="b-dark" onclick="toggleFormSiswa()">+ Tambah</button></div>
+        </div>
+        <div id="form-siswa" class="hidden" style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid #eef0f3">
+          <input id="ns-nama" placeholder="Nama lengkap" style="flex:2;min-width:160px" />
+          <input id="ns-nis" placeholder="NIS" style="flex:1;min-width:100px" />
+          <select id="ns-jk" style="width:70px;flex:none"><option value="L">L</option><option value="P">P</option></select>
+          <input id="ns-hp" placeholder="No. HP ortu" style="flex:1;min-width:120px" />
+          <button class="b-dark" onclick="tambahSiswa()">Simpan</button>
+          <span id="ns-msg" class="sub2"></span>
+        </div>
+        <table><thead><tr><th>No</th><th>Nama</th><th>NIS</th><th>L/P</th><th>No. HP Ortu</th><th>Kelas</th></tr></thead>
+        <tbody id="tb-siswa"><tr><td colspan="6" class="muted2">Memuat…</td></tr></tbody></table>
+      </div>
+    </section>
+
+    <section id="pg-rekap" class="pg hidden">
+      <div class="panel">
+        <div class="panel-h wrap">
+          <div><h3>Rekap Bulanan</h3><p class="sub2" id="rekap-sub">–</p></div>
+          <div class="tools"><input id="rekap-bulan" type="month" value="2026-09" onchange="muatRekap()" /><button class="b-ghost" onclick="exportExcel()">Export Excel</button><button class="b-ghost" onclick="window.print()">Cetak</button></div>
+        </div>
+        <table id="tbl-rekap"><thead><tr><th>Nama</th><th>H</th><th>I</th><th>S</th><th>A</th><th>%</th><th>Status</th></tr></thead>
+        <tbody id="tb-rekap"><tr><td colspan="7" class="muted2">Memuat…</td></tr></tbody></table>
+      </div>
+    </section>
+
+    <section id="pg-pengaturan" class="pg hidden">
+      <div class="panel narrow">
+        <h3>Pengaturan</h3><p class="sub2">Diambil langsung dari tabel <b>sekolah</b>.</p>
+        <label>Nama Sekolah</label><input id="pg-sek" />
+        <label>Alamat</label><input id="pg-alm" />
+        <label>Tahun Ajaran</label><input id="pg-thn" />
+        <br /><button class="b-dark" onclick="simpanPengaturan()">Simpan</button>
+        <p class="note" id="pg-msg"></p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
