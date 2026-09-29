@@ -219,14 +219,25 @@ async function simpanPengaturan() {
 function exportExcel() {
   const { kelas, tgl } = F();
   const bulan = document.getElementById('rekap-bulan').value || tgl.slice(0, 7);
-  const table = document.getElementById('tbl-rekap').outerHTML;
-  const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
-    + '<head><meta charset="UTF-8"></head><body>'
-    + `<h3>Rekap Absensi ${fmtBulan(bulan)} — Kelas ${kelas}</h3>` + table + '</body></html>';
-  const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel' });
+  const table = document.getElementById('tbl-rekap');
+
+  // kumpulkan isi tabel apa adanya (baris judul, lalu header, lalu data)
+  const rows = [[`Rekap Absensi ${fmtBulan(bulan)} — Kelas ${kelas}`], [], []];
+  const bold = [0];
+  table.querySelectorAll('tr').forEach(tr => {
+    const isHead = !!tr.querySelector('th');
+    const cells = [...tr.querySelectorAll('th, td')]
+      .map(td => td.textContent.replace(/\s+/g, ' ').trim());
+    if (!cells.some(c => c !== '')) return;
+    if (isHead) bold.push(rows.length);
+    rows.push(cells);
+  });
+
+  // hasilnya .xlsx asli, jadi Excel membuka tanpa peringatan format/ekstensi
+  const blob = XlsxMini.build(rows, { sheetName: 'Rekap', boldRows: bold });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `rekap-${bulan}-kelas-${kelas.replace(/\s+/g, '')}.xls`;
+  a.download = `rekap-${bulan}-kelas-${kelas.replace(/\s+/g, '')}.xlsx`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
