@@ -114,7 +114,7 @@ th[title]{cursor:help}
 .radio{display:inline-flex;border:1px solid #d4d8df;border-radius:7px;overflow:hidden}
 .radio label{padding:7px 14px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;border-right:1px solid #e2e5ea;background:#fff}
 .radio label:last-child{border-right:0}
-.radio input{accent-color:#173a5e;margin-right:4px}
+.radio input{width:auto;accent-color:#173a5e;margin-right:4px}
 .on-h{background:#e6f4ea!important;color:#166534!important}
 .on-i{background:#fef3c7!important;color:#92400e!important}
 .on-s{background:#ffedd5!important;color:#9a3412!important}
@@ -155,7 +155,7 @@ body{overflow-x:hidden}
   .sidebar nav{display:flex;overflow-x:auto;gap:4px;padding-bottom:2px}
   .sidebar nav button{white-space:nowrap;font-size:12.5px;padding:8px 10px}
   .sidebar nav button svg{display:none}
-  .user-card{display:none}
+  .user-card{margin-top:8px;padding:8px}
   .radio label{padding:10px 13px}
   .mini{min-width:140px}
   .login-box{padding:22px 18px}
@@ -168,4 +168,72 @@ body{overflow-x:hidden}
   /* isi tabel tidak pecah baris — geser horizontal saja */
   .table-scroll th,.table-scroll td{white-space:nowrap}
   .table-scroll table{min-width:700px}
+}
+
+/* ===== kartu profil (tombol akun saya) ===== */
+button.user-card{width:100%;font-family:inherit;text-align:left;cursor:pointer;font-size:14px}
+button.user-card:hover{background:#eef3f8}
+.user-card .peran,.profil .peran{display:inline-block;font-size:11px;font-weight:700;color:#173a5e;background:#eef3f8;border-radius:20px;padding:2px 8px;margin-top:4px}
+
+/* ===== panduan lupa sandi ===== */
+.lupa-box{background:#f6f9fc;border:1px solid #dbe5ef;border-left:4px solid #173a5e;border-radius:8px;padding:12px 14px;margin:0 0 14px;font-size:13px;color:#3b4453}
+.lupa-box ol{margin:8px 0 6px;padding-left:18px}
+.lupa-box li{margin:5px 0}
+.lupa-box .sub2{margin-top:6px}
+
+/* ===== bukti absensi: lokasi GPS + foto kegiatan ===== */
+.abs-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 16px;background:#fafbfc;border-bottom:1px solid #eef0f3}
+.meta-item{font-size:12.5px;color:#3b4453}
+.meta-item a{font-weight:600}
+.b-ghost.xs{padding:6px 11px;font-size:12px}
+.btn-file{position:relative;display:inline-flex;align-items:center;overflow:hidden}
+.btn-file input[type=file]{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;padding:0;border:0;cursor:pointer}
+.thumb{width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #d4d8df;background:#fff}
+
+/* ===== akun saya (modal) ===== */
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:60}
+.modal-box{background:#fff;border-radius:10px;width:420px;max-width:100%;max-height:92vh;overflow:auto;padding:20px}
+.modal-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.modal-h h3{margin:0;font-size:16px}
+.modal-h .x{border:0;background:#f1f2f4;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;color:#3b4453}
+.modal-h .x:hover{background:#e4e6ea}
+.modal-box label{display:block;font-size:13px;font-weight:600;margin:12px 0 6px}
+.modal-box h4{margin:18px 0 4px;font-size:13.5px}
+.profil{display:flex;gap:12px;align-items:center;background:#f6f7f9;border:1px solid #e9ebef;border-radius:8px;padding:12px}
+.profil b{display:block;font-size:14px}
+.profil span{display:block;font-size:12.5px;color:#6b7280}
+.ava.big{width:44px;height:44px;font-size:15px;flex:none}
+.modal-aksi{display:flex;gap:8px;margin-top:4px}
+.modal-aksi button{flex:1}
+
+/* ===== label status & pesan galat ===== */
+.note.err,.sub2.err{color:#b91c1c;font-weight:600}
+.link-aksi.danger{color:#b91c1c}
+
+/* ===== kop & tanda tangan: hanya saat dicetak (File → Print / Simpan PDF) ===== */
+.kop-cetak,.ttd-cetak{display:none}
+.kop-cetak b{font-size:17px;text-transform:uppercase;letter-spacing:.02em}
+.kop-cetak span{display:block;font-size:12.5px;color:#3b4453}
+.ttd-cetak span{display:block;font-size:13px}
+.ttd-cetak span b{display:inline;font-weight:600} /* tanggal tetap sebaris: "Ditetakkan pada, 30 September 2026" */
+.ttd-cetak b{display:block;margin-top:38px;font-size:13px}
+
+@media print{
+  @page{size:A4;margin:14mm}
+  body{background:#fff;font-size:12px}
+  #app{display:block}
+  main{padding:0;max-width:none}
+  /* chrome aplikasi tidak ikut tercetak */
+  .sidebar,.topbar,.alert,.tools,.legend,.abs-meta,.modal,.modal-box,.stats,.btn-file,.link-aksi{display:none!important}
+  .panel{border:0;border-radius:0;margin-bottom:0}
+  .panel-h{border-bottom:2px solid #333;padding:0 0 8px;margin-bottom:8px}
+  .panel h3{font-size:15px}
+  .table-scroll{overflow:visible}
+  .table-scroll table{min-width:0!important}
+  th,td{padding:6px 8px;border-bottom:1px solid #ddd}
+  th{background:#f3f4f6;color:#111}
+  tr{page-break-inside:avoid}
+  .badge,.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .kop-cetak{display:block;margin-bottom:14px}
+  .ttd-cetak{display:flex;justify-content:space-between;align-items:flex-start;margin-top:22px;page-break-inside:avoid}
 }

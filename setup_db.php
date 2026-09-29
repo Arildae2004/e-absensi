@@ -79,23 +79,50 @@ $sql = [
   FOREIGN KEY (id_siswa) REFERENCES siswa(id) ON DELETE CASCADE,
   FOREIGN KEY (id_kelas) REFERENCES kelas(id) ON DELETE CASCADE
 )",
+// bukti foto kegiatan mengajar (1 per kelas per tanggal)
+"CREATE TABLE IF NOT EXISTS bukti_absensi (
+  id_kelas INT NOT NULL,
+  tanggal DATE NOT NULL,
+  id_guru INT NULL,
+  mime VARCHAR(50) DEFAULT 'image/jpeg',
+  foto LONGBLOB NOT NULL,
+  diambil_pada TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id_kelas, tanggal)
+)",
 ];
 
 foreach ($sql as $q) {
   if (!$db->query($q)) die("GAGAL buat tabel: " . $db->error . "\n");
+}
+
+// --- KOLOM BARU (jalankan tiap start; error "duplicate column" 1060 diabaikan) ---
+$kolomBaru = [
+  "ALTER TABLE sekolah ADD COLUMN logo_sekolah VARCHAR(255) NOT NULL DEFAULT ''",
+  "ALTER TABLE guru ADD COLUMN peran ENUM('guru','admin') NOT NULL DEFAULT 'guru'",
+  "ALTER TABLE guru ADD COLUMN token VARCHAR(64) DEFAULT NULL",
+  "ALTER TABLE guru ADD COLUMN token_exp DATETIME DEFAULT NULL",
+  "ALTER TABLE absensi ADD COLUMN lokasi_lat DECIMAL(10,7) DEFAULT NULL",
+  "ALTER TABLE absensi ADD COLUMN lokasi_lng DECIMAL(10,7) DEFAULT NULL",
+  "ALTER TABLE absensi ADD COLUMN lokasi_akurasi DECIMAL(10,1) DEFAULT NULL",
+];
+foreach ($kolomBaru as $q) {
+  if (!$db->query($q) && $db->errno !== 1060) echo "CATATAN: gagal tambah kolom: " . $db->error . "\n";
 }
 echo "OK: database + tabel siap.\n";
 
 // --- SEED ---
 $db->query("INSERT IGNORE INTO sekolah (id,nama_sekolah,alamat_sekolah,tahun_ajaran,semester,batas_waktu_absensi)
   VALUES (1,'SMAN 1 Jakarta','Jl. Merdeka No. 10','2025/2026','Ganjil','10:00:00')");
-
 $passHash = password_hash('admin123', PASSWORD_DEFAULT);
 $stmt = $db->prepare("INSERT IGNORE INTO guru (nip_username,nama_guru,password,inisial) VALUES (?,?,?,?)");
 $nip = '19870512'; $nama = 'Ratna Wijaya'; $inis = 'RW';
 $stmt->bind_param('ssss', $nip, $nama, $passHash, $inis);
 $stmt->execute();
 $guruId = $db->query("SELECT id FROM guru WHERE nip_username='19870512'")->fetch_assoc()['id'];
+
+// akun bawaan dijadikan Admin/TU hanya bila belum ada satupun admin (sekali jalan)
+$db->query("UPDATE guru SET peran='admin' WHERE nip_username='19870512'
+  AND (SELECT cnt FROM (SELECT COUNT(*) cnt FROM guru WHERE peran='admin') x) = 0");
 
 foreach (['X-1','XI IPA 1','XII IPS 1'] as $k) {
   $st = $db->prepare("INSERT IGNORE INTO kelas (nama_kelas,id_wali_kelas) VALUES (?,?)");

@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="E-Absensi" />
-<link rel="stylesheet" href="style.css?v=3" />
+<link rel="stylesheet" href="style.css?v=4" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -27,18 +27,28 @@
     <h2>Selamat datang kembali</h2>
     <p class="sub">Silakan masuk menggunakan akun guru Anda.</p>
     <label>NIP / Username</label>
-    <input id="in-nip" type="text" value="19870512" />
+    <input id="in-nip" type="text" autocomplete="username" />
     <label>Kata Sandi</label>
-    <input id="in-pass" type="password" value="admin123" />
+    <input id="in-pass" type="password" autocomplete="current-password" />
     <p id="login-msg" class="hidden" style="color:#b91c1c;font-size:13px"></p>
     <div class="login-row">
-      <label class="check"><input type="checkbox" checked /> Ingat saya</label>
-      <a href="#">Lupa sandi?</a>
+      <label class="check"><input id="in-ingat" type="checkbox" checked /> Ingat saya</label>
+      <a href="#" onclick="lupaSandi();return false">Lupa sandi?</a>
+    </div>
+    <!-- panduan reset sandi (pengganti tautan mati) -->
+    <div id="lupa-box" class="lupa-box hidden">
+      <b>Lupa kata sandi?</b>
+      <ol>
+        <li>Hubungi <b>TU / Admin sekolah</b> — <span id="lupa-kontak">—</span></li>
+        <li>Sebutkan <b>NIP</b> dan nama lengkap Anda.</li>
+        <li>Sandi baru akan diberikan. Setelah masuk, segera ganti lewat kartu profil (kiri bawah) → <b>Ganti Kata Sandi</b>.</li>
+      </ol>
+      <p class="sub2">Reset otomatis lewat email sengaja tidak disediakan agar data siswa tidak bisa dibuka pihak luar.</p>
     </div>
     <button class="btn-primary" onclick="masuk()">Masuk</button>
-    <p class="help">Demo — NIP <b>19870512</b> / sandi <b>admin123</b>. Hubungi TU untuk akun baru.</p>
+    <p class="help"></p>
   </div>
-  <p class="foot" id="foot-sekolah">© SMAN 1 Jakarta — Jl. Merdeka No. 10</p>
+  <p class="foot" id="foot-sekolah">E-Absensi</p>
 </div>
 
 <div id="app" class="hidden">
@@ -57,15 +67,28 @@
     </nav>
     <p class="menu-label">LAINNYA</p>
     <nav>
-      <button data-p="pengaturan" onclick="pindah('pengaturan')">
+      <!-- khusus Admin/TU: manajemen akun guru -->
+      <button id="menu-guru" class="hidden" data-p="guru" onclick="pindah('guru')">
+        <svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-8 0a4 4 0 1 0 4-4 4 4 0 0 0-4 4zm8 2c-2.7 0-8 1.3-8 4v3h16v-3c0-2.7-5.3-4-8-4z"/></svg>Manajemen Guru</button>
+      <button id="menu-pengaturan" data-p="pengaturan" onclick="pindah('pengaturan')">
         <svg viewBox="0 0 24 24"><path d="M13 15a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm7.4-4a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L14.9 3h-4l-.4 2.6a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4L6.4 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.6 7.6 0 0 0 1.7-1l2.4 1 2-3.4z"/></svg>Pengaturan</button>
       <button onclick="keluar()">
         <svg viewBox="0 0 24 24"><path d="M17 7l-1.4 1.4L18.2 11H8v2h10.2l-2.6 2.6L17 17l5-5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4z"/></svg>Keluar</button>
     </nav>
-    <div class="user-card"><div class="ava" id="u-ava">RW</div><div><b id="u-nama">—</b><span id="u-kelas">—</span></div></div>
+    <!-- klik kartu profil = akun saya (ganti sandi) -->
+    <button class="user-card" id="user-card" onclick="bukaAkun()" title="Akun saya — ganti kata sandi">
+      <div class="ava" id="u-ava">RW</div>
+      <div><b id="u-nama">—</b><span id="u-kelas">—</span><span class="peran" id="u-peran">Guru</span></div>
+    </button>
   </aside>
 
   <main>
+    <!-- hanya tampil saat dicetak (File → Print / Simpan sebagai PDF) -->
+    <div id="kop-cetak" class="kop-cetak">
+      <b id="kop-nama">Sekolah</b>
+      <span id="kop-alm">—</span>
+      <span id="kop-thn">Tahun Ajaran —</span>
+    </div>
     <header class="topbar">
       <div><h1 id="judul">Dashboard</h1><p id="sub-tgl">Memuat tanggal…</p></div>
       <div class="top-right">
@@ -111,6 +134,16 @@
           <div><h3 id="abs-judul">Absensi Kelas X-1</h3><p class="sub2" id="abs-sub">–</p></div>
           <div class="tools"><button class="b-ghost" onclick="semuaHadir()">Semua Hadir</button><button class="b-ghost" onclick="hapusAbsensi()">Hapus Hari Ini</button><button class="b-dark" onclick="simpanAbsensi()">Simpan Absensi</button></div>
         </div>
+        <!-- bukti kegiatan: lokasi GPS + foto (audit trail wali kelas) -->
+        <div class="abs-meta">
+          <span class="meta-item" id="lokasi-info">📍 Lokasi belum diambil</span>
+          <button class="b-ghost xs" onclick="ambilLokasi()">Ambil Lokasi</button>
+          <label class="b-ghost xs btn-file">📷 Foto Bukti
+            <input type="file" id="abs-foto" accept="image/*" capture="environment" onchange="kirimBukti(this)" />
+          </label>
+          <span class="meta-item" id="bukti-info">Belum ada foto bukti</span>
+          <img id="bukti-thumb" class="thumb hidden" alt="bukti" />
+        </div>
         <div class="table-scroll"><table><thead><tr><th style="width:40px">No</th><th>Nama Siswa</th><th>NIS</th><th style="width:280px">Kehadiran</th><th>Keterangan</th></tr></thead>
         <tbody id="tb-absensi"><tr><td colspan="5" class="muted2">Memuat…</td></tr></tbody></table></div>
         <p class="note" id="abs-msg"></p>
@@ -153,18 +186,85 @@
 
     <section id="pg-pengaturan" class="pg hidden">
       <div class="panel narrow">
-        <h3>Pengaturan</h3><p class="sub2">Diambil langsung dari tabel <b>sekolah</b>.</p>
+        <h3>Pengaturan</h3><p class="sub2">Identitas sekolah — diambil &amp; disimpan ke tabel <b>sekolah</b>. Nama, alamat, tahun ajaran, dan logo otomatis tampil di halaman login, sidebar, footer, dan kop cetak.</p>
         <label>Nama Sekolah</label><input id="pg-sek" />
         <label>Alamat</label><input id="pg-alm" />
         <label>Tahun Ajaran</label><input id="pg-thn" />
+        <label>Semester</label>
+        <select id="pg-sem"><option>Ganjil</option><option>Genap</option></select>
+        <label>Logo (URL gambar, kosongkan untuk pakai bawaan)</label><input id="pg-logo" placeholder="https://…/logo-sekolah.png" />
         <br /><button class="b-dark" onclick="simpanPengaturan()">Simpan</button>
         <p class="note" id="pg-msg"></p>
       </div>
     </section>
+
+    <!-- khusus Admin/TU -->
+    <section id="pg-guru" class="pg hidden">
+      <div class="panel">
+        <div class="panel-h wrap">
+          <div><h3>Manajemen Guru</h3><p class="sub2" id="gr-sub">–</p></div>
+          <div class="tools"><button class="b-dark" onclick="toggleFormGuru()">+ Tambah Guru</button></div>
+        </div>
+        <div id="form-guru" class="hidden" style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid #eef0f3">
+          <input id="gr-nip" placeholder="NIP" style="flex:1;min-width:130px" />
+          <input id="gr-nama" placeholder="Nama lengkap" style="flex:2;min-width:160px" />
+          <input id="gr-inis" placeholder="Inisial" style="width:80px;flex:none" />
+          <input id="gr-sandi" type="password" placeholder="Sandi" autocomplete="new-password" style="flex:1;min-width:130px" />
+          <select id="gr-peran" style="flex:1;min-width:150px">
+            <option value="guru">Guru / Wali Kelas</option>
+            <option value="admin">Admin / TU</option>
+          </select>
+          <button class="b-dark" onclick="simpanGuru()">Simpan</button>
+          <button class="b-ghost" onclick="resetFormGuru()">Batal</button>
+          <span id="gr-msg" class="sub2"></span>
+        </div>
+        <div class="table-scroll"><table><thead><tr><th>No</th><th>NIP</th><th>Nama</th><th>Inisial</th><th>Peran</th><th>Aksi</th></tr></thead>
+        <tbody id="tb-guru"><tr><td colspan="6" class="muted2">Memuat…</td></tr></tbody></table></div>
+        <p class="note">Peran <b>Admin/TU</b> berhak membuka Pengaturan &amp; mengelola akun. Riwayat absensi guru yang dihapus dialihkan ke akun penghapus, bukan ikut terhapus.</p>
+      </div>
+    </section>
+
+    <!-- blok tanda tangan khusus cetak/PDF -->
+    <div id="ttd-cetak" class="ttd-cetak">
+      <span>Ditetakkan pada, <b id="ttd-tgl">—</b></span>
+      <div class="ttd-kanan">
+        <span>Wali Kelas,</span>
+        <b id="ttd-nama">…………………………</b>
+      </div>
+    </div>
   </main>
 </div>
 
+<!-- Akun saya: profil + ganti kata sandi (dibuka dari kartu profil) -->
+<div id="modal-akun" class="modal hidden" onclick="if(event.target===this)tutupAkun()">
+  <div class="modal-box">
+    <div class="modal-h">
+      <h3>Akun Saya</h3>
+      <button class="x" onclick="tutupAkun()" aria-label="Tutup">✕</button>
+    </div>
+    <div class="profil">
+      <div class="ava big" id="ak-ava">RW</div>
+      <div><b id="ak-nama">—</b><span id="ak-nip">—</span><span class="peran" id="ak-peran">Guru</span></div>
+    </div>
+    <h4>Ganti Kata Sandi</h4>
+    <label>Sandi lama</label><input id="ak-lama" type="password" autocomplete="current-password" />
+    <label>Sandi baru (min. 6 karakter)</label><input id="ak-baru" type="password" autocomplete="new-password" />
+    <label>Ulangi sandi baru</label><input id="ak-ulang" type="password" autocomplete="new-password" />
+    <p class="note" id="ak-msg"></p>
+    <div class="modal-aksi">
+      <button class="b-dark" onclick="gantiSandi()">Simpan Sandi</button>
+      <button class="b-ghost" onclick="keluar()">Keluar</button>
+    </div>
+  </div>
+</div>
+
 <script src="xlsx-mini.js?v=1"></script>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
+<script>
+  // service worker: supaya aplikasi tetap terbuka saat sinyal lemah/offline
+  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+</script>
 </body>
 </html>

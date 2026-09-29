@@ -8,6 +8,10 @@ $DB_PASS = getenv('MYSQLPASSWORD') ?: getenv('DB_PASS') ?: '';
 $DB_NAME = getenv('MYSQLDATABASE') ?: getenv('DB_NAME') ?: 'db_eabsensi';
 $DB_PORT = (int)(getenv('MYSQLPORT') ?: 3306);
 
+// PHP 8.1+ default sudah STRICT (lempar exception); diset eksplisit supaya perilaku sama di semua versi PHP.
+// Setiap aksi yang bisa gagal (duplikat dsb.) dibungkus try/catch agar tetap balas JSON, bukan halaman error.
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
 $conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME, $DB_PORT);
 if ($conn->connect_error) {
   http_response_code(500);

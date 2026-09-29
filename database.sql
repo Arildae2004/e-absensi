@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS sekolah (
     tahun_ajaran VARCHAR(20) NOT NULL DEFAULT '2025/2026',
     semester ENUM('Ganjil', 'Genap') NOT NULL DEFAULT 'Ganjil',
     batas_waktu_absensi TIME NOT NULL DEFAULT '10:00:00',
+    logo_sekolah VARCHAR(255) NOT NULL DEFAULT '', -- URL logo (kosong = logo bawaan)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -24,6 +25,9 @@ CREATE TABLE IF NOT EXISTS guru (
     nama_guru VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
     inisial VARCHAR(10),
+    peran ENUM('guru', 'admin') NOT NULL DEFAULT 'guru', -- admin = Admin/TU (buka Pengaturan & Manajemen Guru)
+    token VARCHAR(64) DEFAULT NULL,      -- token sesi login (berlaku 30 hari)
+    token_exp DATETIME DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -57,6 +61,9 @@ CREATE TABLE IF NOT EXISTS absensi (
     jam_ke INT DEFAULT 1,
     status ENUM('H', 'I', 'S', 'A') NOT NULL, -- H: Hadir, I: Izin, S: Sakit, A: Alpa
     keterangan VARCHAR(255) DEFAULT '-',
+    lokasi_lat DECIMAL(10,7) DEFAULT NULL,   -- GPS guru saat mengisi absensi
+    lokasi_lng DECIMAL(10,7) DEFAULT NULL,
+    lokasi_akurasi DECIMAL(10,1) DEFAULT NULL, -- akurasi GPS dalam meter
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_siswa) REFERENCES siswa(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (id_kelas) REFERENCES kelas(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -74,4 +81,17 @@ CREATE TABLE IF NOT EXISTS pemanggilan_siswa (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_siswa) REFERENCES siswa(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (id_kelas) REFERENCES kelas(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- 7. TABEL FOTO BUKTI KEGIATAN (1 per kelas per tanggal)
+CREATE TABLE IF NOT EXISTS bukti_absensi (
+    id_kelas INT NOT NULL,
+    tanggal DATE NOT NULL,
+    id_guru INT NULL,
+    mime VARCHAR(50) DEFAULT 'image/jpeg',
+    foto LONGBLOB NOT NULL,               -- JPEG hasil kompresi (maks 3 MB)
+    diambil_pada TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_kelas, tanggal),
+    FOREIGN KEY (id_kelas) REFERENCES kelas(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_guru) REFERENCES guru(id) ON DELETE SET NULL
 );

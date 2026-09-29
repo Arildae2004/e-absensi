@@ -43,8 +43,11 @@ php -S localhost:8001 -t absensi-siswa
 
 ### a. Login
 1. Buka `http://localhost:8001`.
-2. Isi **NIP / Username** dan **Kata Sandi**, klik **Masuk**.
-3. Sistem memanggil `api.php?action=login` → mencocokkan `nip_username` di tabel `guru` dan verifikasi `password` (hash). Gagal → pesan merah; berhasil → masuk dashboard, data guru disimpan di `sessionStorage`.
+2. Isi **NIP / Username** dan **Kata Sandi**, klik **Masuk**. (Lokal: NIP & sandi demo sudah terisi otomatis.)
+3. Sistem memanggil `api.php?action=login` → mencocokkan `nip_username` di tabel `guru`, verifikasi `password` (hash), lalu menerbitkan **token sesi 30 hari** (kolom `guru.token` / `token_exp`). Gagal → pesan merah; berhasil → dashboard + data guru & token disimpan di `sessionStorage` (atau `localStorage` bila centang *Ingat saya*).
+4. Semua aksi API lain **wajib** membawa header `Authorization: Bearer <token>`; token habis → dialog "Sesi berakhir" dan dipaksa login ulang.
+5. **Kredensial demo** hanya tampil bila server mengizinkan (`DEMO_LOGIN`); di Railway/produksi teks petunjuk otomatis disembunyikan (login tetap bisa dengan NIP & sandi yang sama).
+6. **Lupa sandi?** — tautan tidak lagi mati: membuka panduan reset lewat TU/Admin (sistem sengaja tidak mengirim email reset demi keamanan data siswa).
 
 ### b. Dashboard (halaman utama)
 - **Filter atas**: pilih Kelas (`X-1 / XI IPA 1 / XII IPS 1 / SEMUA`) + Tanggal → semua angka & tabel ikut berubah.
@@ -60,6 +63,9 @@ php -S localhost:8001 -t absensi-siswa
 2. Tiap baris siswa: pilih radio **H / I / S / A** (warna hijau/kuning/oranye/merah) + isi **Keterangan** bila perlu (mis. "Surat dokter").
 3. **Semua Hadir** = tandai H sekaligus. **Simpan Absensi** = kirim ke `action=absensi_save` → tersimpan ke tabel `absensi` (`INSERT ... ON DUPLICATE KEY UPDATE`, jadi simpan ulang di tanggal sama hanya menimpa, tidak dobel).
 4. Pesan hijau "Tersimpan N siswa" = sukses; dashboard otomatis refresh.
+5. **Bukti kegiatan** (baris abu-abu di atas tabel):
+   - **📍 Lokasi GPS** — izin lokasi diminta sekali saat halaman Absensi dibuka; titik koordinat + akurasi ikut disimpan ke `absensi.lokasi_lat/lng/akurasi` dan tampil sebagai pratinjau Google Maps. Bila izin ditolak, klik **Ambil Lokasi** untuk mencoba lagi (penyimpanan tetap jalan tanpa lokasi).
+   - **📷 Foto Bukti** — pilih/ambil foto kegiatan (kamera HP), otomatis dikompres ke JPEG ≤1280px lalu dikirim ke `action=bukti_simpan` dan disimpan di tabel `bukti_absensi` (1 foto per kelas per tanggal). Pratinjau & waktu pengambilan tampil di baris yang sama; foto lama ikut termuat saat membuka tanggal tersebut.
 
 ### d. Data Siswa
 - Menampilkan daftar sesuai filter kelas + kotak **Cari nama** (filter NIS/nama via `action=siswa&q=`).
@@ -67,12 +73,22 @@ php -S localhost:8001 -t absensi-siswa
 - Data berasal dari `JOIN siswa + kelas`.
 
 ### e. Rekap (laporan bulanan)
-1. Pilih bulan (`input type=month`) + filter kelas.
-2. Tabel agregat dari `action=rekap`: per siswa kolom **H, I, S, A, % (hadir/total), Status** (Baik ≥90%, Pantau 75–89%, Bermasalah <75%).
-3. Tombol **Cetak** memakai print browser.
+1. Pilih bulan (`input type=month`) + filter kelas + kotak **Cari nama siswa** (filter di browser, tanpa panggil server).
+2. Tabel agregat dari `action=rekap`: per siswa kolom **H, I, S, A, % (hadir/total), Status** berwarna (Hadir Baik ≥90%, Perlu Pantau 75–89%, Perlu Perhatian <75%, Alpa). Baris tanpa data dibuat redup + tombol **Isi absensi**.
+3. **Export Excel** menghasilkan `.xlsx` asli (tanpa peringatan format) berisi persis tabel yang tampil — tombol aksi tidak ikut.
+4. **Cetak** = print browser → **PDF/Laporan Ledger siap arsip**: otomatis hanya halaman Rekap yang tercetak, plus **kop surat** (nama, alamat, tahun ajaran dari tabel `sekolah`) dan **blok tanda tangan Wali Kelas**; sidebar, tombol, dan filter tidak ikut tercetak.
 
-### f. Pengaturan
-- Form Nama Sekolah, Alamat, Tahun Ajaran — dibaca dari (`pengaturan_get`) dan disimpan ke (`pengaturan_save`) tabel `sekolah` baris `id=1`.
+### f. Pengaturan (khusus Admin/TU)
+- Form **Nama Sekolah, Alamat, Tahun Ajaran, Semester, Logo (URL gambar)** — dibaca dari (`pengaturan_get`) dan disimpan ke (`pengaturan_save`) tabel `sekolah` baris `id=1`.
+- Perubahan langsung dipakai di **judul halaman, kop login, sidebar, footer, dan kop cetak** (`logo_sekolah` menggantikan ikon bawaan bila diisi).
+
+### g. Manajemen Guru (khusus Admin/TU)
+- Daftar akun + tambah/ubah/hapus: **NIP, Nama, Inisial, Sandi, Peran** (`guru_list`, `guru_simpan`, `guru_hapus`).
+- Peran **Admin/TU** = akses Pengaturan & halaman ini; **Guru/Wali Kelas** hanya mengabsen, mengelola siswa, dan melihat rekap (API menolak dengan 403 bila dipaksa).
+- Nama guru otomatis disimpan Title Case. Menghapus guru tidak menghapus riwayat absensi — datanya dialihkan ke akun penghapus.
+
+### h. Akun Saya (untuk semua peran)
+- Klik **kartu profil** di kiri bawah → modal berisi identitas + **Ganti Kata Sandi** (sandi lama wajib benar, sandi baru min. 6 karakter) + tombol **Keluar**. Ini jalur resmi bagi guru yang menerima sandi baru dari TU.
 
 ---
 
@@ -80,14 +96,23 @@ php -S localhost:8001 -t absensi-siswa
 
 | Fitur | Tombol / Aksi | API | Tabel DB |
 |---|---|---|---|
-| Login | Masuk | `login` | `guru` (baca + verifikasi hash) |
+| Login (token sesi) | Masuk | `login` | `guru` (baca + verifikasi hash + tulis token) |
+| Sesi | semua aksi | `Authorization: Bearer` | `guru.token` / `token_exp` |
 | Statistik dashboard | Ganti filter | `dashboard` | `siswa` (hitung) + `absensi` (grup by status) |
 | Lihat absensi harian | Buka Absensi | `absensi_get` | `siswa LEFT JOIN absensi` per tanggal & kelas |
 | Tandai Semua Hadir | Semua Hadir | — (lokal di browser) | — |
-| Simpan absensi | Simpan Absensi | `absensi_save` | `absensi` (upsert) |
+| Simpan absensi + lokasi | Simpan Absensi | `absensi_save` | `absensi` (upsert + lokasi GPS) |
+| Lokasi GPS | Ambil Lokasi | — (browser Geolocation) | `absensi.lokasi_lat/lng/akurasi` |
+| Foto bukti kegiatan | Foto Bukti | `bukti_simpan` / `bukti_get` | `bukti_absensi` (BLOB) |
 | Cari siswa | Ketik di Cari | `siswa` | `siswa` (LIKE nama/NIS) |
-| Rekap bulan | Ganti bulan/kelas | `rekap` | `absensi` (SUM per status) |
-| Pengaturan sekolah | Simpan | `pengaturan_get/save` | `sekolah` |
+| Rekap bulan + cari nama | Ganti bulan/kelas | `rekap` | `absensi` (SUM per status) |
+| Export Excel (.xlsx) | Export Excel | — (XlsxMini, lokal) | — |
+| Cetak / PDF ledger | Cetak | — (print browser + kop cetak) | `sekolah` |
+| Pengaturan sekolah + logo | Simpan | `pengaturan_get/save` (admin) | `sekolah` |
+| Manajemen guru | Tambah/Ubah/Hapus | `guru_list/simpan/hapus` (admin) | `guru` |
+| Ganti sandi | Akun Saya | `ganti_password` | `guru.password` |
+| Panduan lupa sandi | Lupa sandi? | — (tampilan) | — |
+| PWA offline | otomatis | — (sw.js cache-first aset) | — |
 | Data kelas | Filter dropdown | `kelas` | `kelas + COUNT(siswa)` |
 
 ---
@@ -106,18 +131,22 @@ kelas (1) ───< absensi (N) via absensi.id_kelas
 
 siswa (1) ───< absensi (N) via absensi.id_siswa
 siswa (1) ───< pemanggilan_siswa (N)
+
+kelas (1) ─── bukti_absensi (1) per tanggal (foto kegiatan)
 ```
 
 ### Tabel-tabel
-**`sekolah`** — profil, 1 baris: `nama_sekolah, alamat_sekolah, tahun_ajaran, semester (Ganjil/Genap), batas_waktu_absensi (TIME, default 10:00:00)`.
+**`sekolah`** — profil, 1 baris: `nama_sekolah, alamat_sekolah, tahun_ajaran, semester (Ganjil/Genap), batas_waktu_absensi (TIME, default 10:00:00), logo_sekolah (URL gambar, kosong = bawaan)`.
 
-**`guru`** — akun login: `nip_username (UNIQUE), nama_guru, password (hash bcrypt), inisial`. Seed: `19870512 / admin123 / Ratna Wijaya / RW`.
+**`guru`** — akun login: `nip_username (UNIQUE), nama_guru, password (hash bcrypt), inisial, peran (guru|admin), token + token_exp (sesi 30 hari)`. Seed: `19870512 / admin123 / Ratna Wijaya / RW` — dijadikan **Admin/TU** otomatis bila belum ada admin lain.
 
 **`kelas`** — `nama_kelas (UNIQUE: X-1, XI IPA 1, XII IPS 1), id_wali_kelas → guru`.
 
 **`siswa`** — `nis (UNIQUE), nama_siswa, jenis_kelamin (L/P), no_hp_ortu, id_kelas → kelas`. Seed: 8 nama × 3 kelas = 24 siswa (NIS 2024001 dst).
 
-**`absensi`** — inti: `id_siswa → siswa, id_kelas → kelas, id_guru → guru, tanggal (DATE), jam_ke (default 1), status (H/I/S/A), keterangan`. Kunci `UNIQUE(id_siswa, tanggal, jam_ke)` mencegah input ganda.
+**`absensi`** — inti: `id_siswa → siswa, id_kelas → kelas, id_guru → guru, tanggal (DATE), jam_ke (default 1), status (H/I/S/A), keterangan, lokasi_lat, lokasi_lng, lokasi_akurasi (GPS penginput)`. Kunci `UNIQUE(id_siswa, tanggal, jam_ke)` mencegah input ganda.
+
+**`bukti_absensi`** — foto kegiatan mengajar: `id_kelas + tanggal (PRIMARY KEY), id_guru, mime, foto (LONGBLOB, JPEG maks 3 MB), diambil_pada`. Satu foto per kelas per tanggal (upsert).
 
 **`pemanggilan_siswa`** — tindak lanjut alpa: `id_siswa, id_kelas, jumlah_alpa, status (Pending/Diproses/Selesai)`. (Tabel siap; UI tombol "Panggil" tahap berikutnya.)
 
@@ -147,3 +176,31 @@ siswa (1) ───< pemanggilan_siswa (N)
 
 ## 7. Alur Data (Contoh Nyata)
 Guru Ratna (id=1) mengabsen X-1 (id=1) tanggal 2026-09-25: Budi (id=3) Hadir, Siti (id=2) Izin "Acara keluarga" → `POST action=absensi_save` → 2 baris di `absensi` → Dashboard tanggal itu menampilkan Hadir=1, Izin=1 → Rekap bulan `2026-09` menambah H+1 untuk Budi, I+1 untuk Siti.
+
+---
+
+## 8. Variabel Lingkungan (Railway / server)
+
+| Variabel | Fungsi | Default |
+|---|---|---|
+| `DEMO_LOGIN` | `1` = teks petunjuk NIP/sandi demo tampil di halaman login; `0` = disembunyikan (mode produksi). | lokal: tampil; **di Railway: otomatis sembunyi** |
+| `ADMIN_NIPS` | Daftar NIP yang dipaksa berperan Admin/TU, dipisah koma (mis. `ADMIN_NIPS=19870512,19790101`). Melengkapi kolom `guru.peran`. | kosong |
+| `MYSQLHOST/USER/PASSWORD/DATABASE/PORT` | Koneksi DB (otomatis dari plugin MySQL Railway). | `127.0.0.1` / `root` / `db_eabsensi` |
+| `PORT` | Port HTTP yang dipakai `router.php`. | `80` |
+
+Contoh mengubah di Railway:
+```bash
+railway variables set DEMO_LOGIN=1 --service e-absensi-web   # tampilkan lagi petunjuk demo
+railway redeploy
+```
+
+### PWA / offline
+`sw.js` mendaftar otomatis setelah halaman termuat: berkas aplikasi (HTML/CSS/JS/gambar) di-*cache* sehingga aplikasi tetap terbuka walau sinyal hilang, sedangkan **data absensi selalu diambil dari jaringan** (tidak pernah menyimpan data basi di cache). Setelah deploy, versi berkas berubah (`style.css?v=`, `app.js?v=`) sehingga pengguna otomatis memakai versi baru.
+
+### Fitur yang masih membutuhkan konfigurasi eksternal
+| Kebutuhan | Yang perlu disiapkan |
+|---|---|
+| Notifikasi WhatsApp ke ortu saat Alpa/Izin/Sakit | Token gateway (mis. Fonnte) → perlu variabel `FONNTE_TOKEN` + logika pengiriman di `api.php` |
+| Custom domain (mis. `absensi.sman1.sch.id`) | Beli domain + tambahkan domain di dashboard Railway → arahkan record DNS sesuai instruksi Railway |
+| Portal siswa/orang tua (hanya-baca) | Keputusan metode login siswa (NISN? tanggal lahir? no. HP ortu?) karena siswa tidak punya akun/password |
+| Geolocation wajib (validasi radius sekolah) | Simpan koordinat sekolah di tabel `sekolah` lalu bandingkan dengan `absensi.lokasi_*` |
