@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="E-Absensi" />
-<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="style.css?v=2" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -38,7 +38,7 @@
     <button class="btn-primary" onclick="masuk()">Masuk</button>
     <p class="help">Demo — NIP <b>19870512</b> / sandi <b>admin123</b>. Hubungi TU untuk akun baru.</p>
   </div>
-  <p class="foot">© 2025 SMAN 1 Jakarta — Jl. Merdeka No. 10</p>
+  <p class="foot" id="foot-sekolah">© SMAN 1 Jakarta — Jl. Merdeka No. 10</p>
 </div>
 
 <div id="app" class="hidden">
@@ -67,10 +67,10 @@
 
   <main>
     <header class="topbar">
-      <div><h1 id="judul">Dashboard</h1><p id="sub-tgl">Jumat, 25 September 2026 • Semester Ganjil</p></div>
+      <div><h1 id="judul">Dashboard</h1><p id="sub-tgl">Memuat tanggal…</p></div>
       <div class="top-right">
         <select id="flt-kelas" onchange="muatSemua()"><option>X-1</option><option>XI IPA 1</option><option>XII IPS 1</option><option>SEMUA</option></select>
-        <input id="flt-tgl" type="date" value="2026-09-25" onchange="muatSemua()" />
+        <input id="flt-tgl" type="date" onchange="muatSemua()" />
       </div>
     </header>
 
@@ -83,7 +83,7 @@
         <div class="stat"><span>Total Siswa</span><b id="st-total">–</b><small id="st-total-sub">–</small></div>
         <div class="stat"><span>Hadir Hari Ini</span><b id="st-hadir">–</b><small class="up" id="st-hadir-sub">–</small></div>
         <div class="stat"><span>Izin / Sakit</span><b id="st-is">–</b><small id="st-is-sub">–</small></div>
-        <div class="stat"><span>Alpa</span><b id="st-alpa">–</b><small class="down">Perlu tindak lanjut</small></div>
+        <div class="stat"><span>Alpa</span><b id="st-alpa">–</b><small class="down" id="st-alpa-sub">–</small></div>
       </div>
       <div class="cols">
         <div class="panel">
@@ -134,7 +134,7 @@
       <div class="panel">
         <div class="panel-h wrap">
           <div><h3>Rekap Bulanan</h3><p class="sub2" id="rekap-sub">–</p></div>
-          <div class="tools"><input id="rekap-bulan" type="month" value="2026-09" onchange="muatRekap()" /><button class="b-ghost" onclick="exportExcel()">Export Excel</button><button class="b-ghost" onclick="window.print()">Cetak</button></div>
+          <div class="tools"><input id="rekap-bulan" type="month" onchange="muatRekap()" /><button class="b-ghost" onclick="exportExcel()">Export Excel</button><button class="b-ghost" onclick="window.print()">Cetak</button></div>
         </div>
         <div class="table-scroll"><table id="tbl-rekap"><thead><tr><th>Nama</th><th>H</th><th>I</th><th>S</th><th>A</th><th>%</th><th>Status</th></tr></thead>
         <tbody id="tb-rekap"><tr><td colspan="7" class="muted2">Memuat…</td></tr></tbody></table></div>
@@ -154,6 +154,6 @@
   </main>
 </div>
 
-<script src="app.js"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

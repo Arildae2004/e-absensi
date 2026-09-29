@@ -25,12 +25,12 @@ input:focus,select:focus{outline:2px solid #1d4ed8;outline-offset:-1px;border-co
 
 /* LAYOUT */
 #app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
-.sidebar{background:#fff;border-right:1px solid #e2e5ea;padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+.sidebar{background:#fff;border-right:1px solid #e2e5ea;padding:16px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
 .brand{display:flex;gap:10px;align-items:center;padding:4px 8px 14px}
 .brand-mark{width:36px;height:36px;background:#173a5e;color:#fff;border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:14px}
 .brand b{display:block;font-size:14px} .brand span{font-size:12px;color:#6b7280}
 .menu-label{font-size:11px;color:#9aa1ad;font-weight:700;letter-spacing:.06em;margin:12px 8px 6px}
-.sidebar nav{display:grid;gap:2px}
+.sidebar nav{display:grid;gap:2px;min-width:0}
 .sidebar nav button{display:flex;gap:10px;align-items:center;border:0;background:transparent;padding:9px 10px;border-radius:7px;font-size:13.5px;color:#3b4453;cursor:pointer;font-family:inherit;text-align:left}
 .sidebar nav button svg{width:18px;height:18px;fill:#9aa1ad;flex:none}
 .sidebar nav button.active{background:#eef3f8;color:#173a5e;font-weight:600}
@@ -40,7 +40,7 @@ input:focus,select:focus{outline:2px solid #1d4ed8;outline-offset:-1px;border-co
 .ava{width:34px;height:34px;border-radius:50%;background:#d7e0ea;color:#173a5e;display:grid;place-items:center;font-weight:700;font-size:12px}
 .user-card b{display:block;font-size:13px} .user-card span{font-size:12px;color:#6b7280}
 
-main{padding:22px 26px;max-width:1120px}
+main{padding:22px 26px;max-width:1120px;min-width:0}
 .topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:18px;flex-wrap:wrap}
 .topbar h1{margin:0;font-size:20px} .topbar p{margin:4px 0 0;color:#6b7280;font-size:13px}
 .top-right{display:flex;gap:8px} .top-right input,.top-right select{width:auto}
@@ -55,7 +55,10 @@ main{padding:22px 26px;max-width:1120px}
 .stat span{font-size:12.5px;color:#6b7280} .stat b{display:block;font-size:24px;margin:4px 0 2px}
 .stat small{font-size:12px;color:#6b7280} .up{color:#15803d!important} .down{color:#b91c1c!important}
 .cols{display:grid;grid-template-columns:1.6fr 1fr;gap:14px}
-.panel{background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:0;margin-bottom:14px;overflow:hidden}
+.cols>*{min-width:0}
+/* tabel ringkas dashboard tidak dipaksa 640px agar kolom Status tidak terpotong */
+.cols .table-scroll table{min-width:0}
+.panel{background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:0;margin-bottom:14px;overflow:hidden;min-width:0}
 .panel.narrow{max-width:520px;padding:20px}
 .panel h3{margin:0;font-size:14.5px} .panel h4{margin:16px 0 8px;font-size:13px}
 .panel-h{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #eef0f3}
@@ -83,9 +86,9 @@ tr:last-child td{border-bottom:0}
 .att button{background:#fff;border:1px solid #d4d8df;border-radius:6px;padding:6px 12px;font-size:12.5px;cursor:pointer}
 
 /* absensi radio */
-.tools{display:flex;gap:8px;align-items:center}
-.b-dark{background:#173a5e;color:#fff;border:0;padding:9px 14px;border-radius:7px;font-weight:600;cursor:pointer;font-size:13px}
-.b-ghost{background:#fff;border:1px solid #d4d8df;padding:9px 14px;border-radius:7px;font-weight:600;cursor:pointer;font-size:13px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.b-dark{background:#173a5e;color:#fff;border:0;padding:9px 14px;border-radius:7px;font-weight:600;cursor:pointer;font-size:13px;white-space:nowrap}
+.b-ghost{background:#fff;border:1px solid #d4d8df;padding:9px 14px;border-radius:7px;font-weight:600;cursor:pointer;font-size:13px;white-space:nowrap}
 .radio{display:inline-flex;border:1px solid #d4d8df;border-radius:7px;overflow:hidden}
 .radio label{padding:7px 14px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;border-right:1px solid #e2e5ea;background:#fff}
 .radio label:last-child{border-right:0}
@@ -107,7 +110,7 @@ tr:last-child td{border-bottom:0}
 html{-webkit-text-size-adjust:100%}
 body{overflow-x:hidden}
 .muted2{color:#6b7280}
-.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
 .table-scroll table{min-width:640px}
 .login-page{min-height:100vh;min-height:100dvh}
 #app{min-height:100vh;min-height:100dvh}
@@ -128,4 +131,12 @@ body{overflow-x:hidden}
   .mini{min-width:140px}
   .login-box{padding:22px 18px}
   .alert button{margin-left:0;width:100%}
+  /* tools panel pindah ke baris sendiri & tombol tidak terpotong */
+  .panel-h{gap:12px}
+  .panel-h .tools{width:100%}
+  .panel-h .tools button{flex:1;padding:11px 8px}
+  .panel-h .tools .search{flex:1 1 100%;min-width:0}
+  /* isi tabel tidak pecah baris — geser horizontal saja */
+  .table-scroll th,.table-scroll td{white-space:nowrap}
+  .table-scroll table{min-width:700px}
 }

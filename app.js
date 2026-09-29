@@ -33,6 +33,7 @@ function enterApp() {
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('u-nama').textContent = GURU.nama_guru;
   document.getElementById('u-ava').textContent = (GURU.inisial || GURU.nama_guru.slice(0, 2)).toUpperCase();
+  document.getElementById('u-kelas').textContent = GURU.nip_username ? `NIP ${GURU.nip_username}` : 'Akun Guru';
   muatSemua(); muatPengaturan();
 }
 function pindah(nama) {
@@ -42,7 +43,27 @@ function pindah(nama) {
   document.getElementById('judul').textContent = { dashboard: 'Dashboard', absensi: 'Absensi', siswa: 'Data Siswa', rekap: 'Rekap', pengaturan: 'Pengaturan' }[nama] || nama;
 }
 const F = () => ({ kelas: document.getElementById('flt-kelas').value, tgl: document.getElementById('flt-tgl').value });
-function muatSemua() { muatDashboard(); muatAbsensi(); muatSiswa(); muatRekap(); }
+const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+const BULANS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const hariIni = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const fmtTgl = iso => { const [y, m, d] = String(iso || '').split('-').map(Number); return y ? `${d} ${BULANS[m - 1] || ''} ${y}` : '—'; };
+const fmtTglPanjang = iso => { const [y, m, d] = String(iso || '').split('-').map(Number); return y ? `${HARI[new Date(y, m - 1, d).getDay()]}, ${d} ${BULANS[m - 1] || ''} ${y}` : '—'; };
+const fmtBulan = ym => { const [y, m] = String(ym || '').split('-').map(Number); return y ? `${BULANS[m - 1] || ''} ${y}` : '—'; };
+let SEMESTER = 'Ganjil';
+
+// Tanggal selalu ikut hari ini supaya tidak basi saat di-hosting (Railway).
+function setTanggalHariIni() {
+  const t = document.getElementById('flt-tgl');
+  t.value = hariIni();
+  document.getElementById('rekap-bulan').value = t.value.slice(0, 7);
+  document.getElementById('foot-sekolah').textContent = `© ${new Date().getFullYear()} SMAN 1 Jakarta — Jl. Merdeka No. 10`;
+  syncJudul();
+}
+function syncJudul() {
+  const { tgl } = F();
+  document.getElementById('sub-tgl').textContent = `${fmtTglPanjang(tgl)} • Semester ${SEMESTER}`;
+}
+function muatSemua() { syncJudul(); muatDashboard(); muatAbsensi(); muatSiswa(); muatRekap(); }
 
 async function muatDashboard() {
   const { kelas, tgl } = F();
@@ -56,13 +77,16 @@ async function muatDashboard() {
     document.getElementById('st-is').textContent = d.izin + d.sakit;
     document.getElementById('st-is-sub').textContent = `${d.izin} izin • ${d.sakit} sakit`;
     document.getElementById('st-alpa').textContent = d.alpa;
+    const subAlpa = document.getElementById('st-alpa-sub');
+    subAlpa.textContent = d.alpa > 0 ? 'Perlu tindak lanjut' : 'Tidak ada alpa';
+    subAlpa.className = d.alpa > 0 ? 'down' : 'muted2';
     const wb = document.querySelector('#alert-absen b');
-    if (d.terisi === 0) { wb.textContent = `Absensi ${tgl} belum diisi.`; }
-    else { wb.textContent = `Absensi ${tgl} sudah terisi ${d.terisi} siswa.`; }
+    if (d.terisi === 0) { wb.textContent = `Absensi ${fmtTgl(tgl)} belum diisi.`; }
+    else { wb.textContent = `Absensi ${fmtTgl(tgl)} sudah terisi ${d.terisi} siswa.`; }
     document.querySelector('#alert-absen span').textContent = `Kelas ${kelas} • ${d.total} siswa`;
     // tabel absensi hari itu (kelas spesifik; kalau SEMUA tampilkan X-1)
     const kShow = kelas === 'SEMUA' ? 'X-1' : kelas;
-    document.getElementById('dash-tabel-judul').textContent = `Absensi ${tgl} — ${kShow}`;
+    document.getElementById('dash-tabel-judul').textContent = `Absensi ${fmtTgl(tgl)} — ${kShow}`;
     const a = await jget(`${API}?action=absensi_get&tanggal=${tgl}&kelas=${encodeURIComponent(kShow)}`);
     document.getElementById('tb-dash').innerHTML = (a.data || []).slice(0, 6).map(r =>
       `<tr><td>${r.nis}</td><td>${r.nama_siswa}</td><td>${r.status ? pill(r.status) : '<span class="pill">Belum</span>'}</td><td>${r.keterangan || '-'}</td></tr>`).join('')
@@ -70,17 +94,25 @@ async function muatDashboard() {
     // mini rekap bulan berjalan
     const bl = tgl.slice(0, 7);
     const rk = await jget(`${API}?action=rekap&bulan=${bl}&kelas=${encodeURIComponent(kShow)}`);
-    document.getElementById('tb-mini-rekap').innerHTML = (rk.data || []).slice(0, 5).map(r =>
-      `<tr><td><b>${r.nama_siswa}</b></td><td>${r.pct}%</td><td>${pill(r.A > 0 && r.pct < 75 ? 'A' : r.tot == 0 ? '' : 'H')} ${r.status}</td></tr>`).join('')
-      || '<tr><td colspan="3">Belum ada data.</td></tr>';
-  } catch (e) { /* server belum siap */ }
+    document.getElementById('tb-mini-rekap').innerHTML = (rk.data || []).slice(0, 5).map(r => {
+      if (!Number(r.tot)) return `<tr><td><b>${r.nama_siswa}</b></td><td class="muted2">–</td><td class="muted2">Belum ada data</td></tr>`;
+      const st = r.A > 0 && r.pct < 75 ? 'A' : 'H';
+      return `<tr><td><b>${r.nama_siswa}</b></td><td>${r.pct}%</td><td>${pill(st)} ${r.status}</td></tr>`;
+    }).join('') || '<tr><td colspan="3">Belum ada data.</td></tr>';
+  } catch (e) {
+    // server tidak terjangkau — jangan biarkan tampilan "Memuat…" selamanya
+    document.querySelector('#alert-absen b').textContent = 'Gagal memuat data dari server.';
+    document.querySelector('#alert-absen span').textContent = 'Periksa koneksi lalu muat ulang halaman.';
+    document.getElementById('tb-dash').innerHTML = '<tr><td colspan="4" class="muted2">Gagal memuat.</td></tr>';
+    document.getElementById('tb-mini-rekap').innerHTML = '<tr><td colspan="3" class="muted2">Gagal memuat.</td></tr>';
+  }
 }
 
 async function muatAbsensi() {
   let { kelas, tgl } = F();
   if (kelas === 'SEMUA') kelas = 'X-1'; // absensi input per kelas
   document.getElementById('abs-judul').textContent = `Absensi Kelas ${kelas}`;
-  document.getElementById('abs-sub').textContent = `${tgl} • Jam ke-1`;
+  document.getElementById('abs-sub').textContent = `${fmtTgl(tgl)} • Jam ke-1`;
   try {
     const r = await jget(`${API}?action=absensi_get&tanggal=${tgl}&kelas=${encodeURIComponent(kelas)}`);
     ABSENSI = r.data || [];
@@ -151,17 +183,28 @@ async function muatRekap() {
   const { kelas, tgl } = F(); const bl = document.getElementById('rekap-bulan').value || tgl.slice(0, 7);
   try {
     const r = await jget(`${API}?action=rekap&bulan=${bl}&kelas=${encodeURIComponent(kelas)}`);
-    document.getElementById('rekap-sub').textContent = `${(r.data || []).length} siswa • Periode ${bl} • Kelas ${kelas}`;
-    document.getElementById('tb-rekap').innerHTML = (r.data || []).map(x =>
-      `<tr><td><b>${x.nama_siswa}</b></td><td>${x.H || 0}</td><td>${x.I || 0}</td><td>${x.S || 0}</td><td>${x.A || 0}</td><td>${x.pct}%</td><td>${nmStatus(x.A > 0 && x.pct < 75 ? 'A' : x.tot == 0 ? '' : 'H')} ${x.status}</td></tr>`).join('')
-      || '<tr><td colspan="7">Belum ada data.</td></tr>';
-  } catch (e) {}
+    document.getElementById('rekap-sub').textContent = `${(r.data || []).length} siswa • Periode ${fmtBulan(bl)} • Kelas ${kelas}`;
+    document.getElementById('tb-rekap').innerHTML = (r.data || []).map(x => {
+      if (!Number(x.tot)) return `<tr><td><b>${x.nama_siswa}</b></td><td class="muted2">–</td><td class="muted2">–</td><td class="muted2">–</td><td class="muted2">–</td><td class="muted2">–</td><td class="muted2">Belum ada data</td></tr>`;
+      const st = x.A > 0 && x.pct < 75 ? 'A' : 'H';
+      return `<tr><td><b>${x.nama_siswa}</b></td><td>${x.H || 0}</td><td>${x.I || 0}</td><td>${x.S || 0}</td><td>${x.A || 0}</td><td>${x.pct}%</td><td>${nmStatus(st)} ${x.status}</td></tr>`;
+    }).join('') || '<tr><td colspan="7">Belum ada data.</td></tr>';
+  } catch (e) {
+    document.getElementById('rekap-sub').textContent = 'Gagal memuat data dari server.';
+    document.getElementById('tb-rekap').innerHTML = '<tr><td colspan="7" class="muted2">Gagal memuat.</td></tr>';
+  }
 }
 
 async function muatPengaturan() {
   try {
     const r = await jget(API + '?action=pengaturan_get');
-    if (r.ok) { document.getElementById('pg-sek').value = r.data.nama_sekolah; document.getElementById('pg-alm').value = r.data.alamat_sekolah; document.getElementById('pg-thn').value = r.data.tahun_ajaran; }
+    if (r.ok) {
+      document.getElementById('pg-sek').value = r.data.nama_sekolah;
+      document.getElementById('pg-alm').value = r.data.alamat_sekolah;
+      document.getElementById('pg-thn').value = r.data.tahun_ajaran;
+      SEMESTER = r.data.semester || SEMESTER;
+      syncJudul();
+    }
   } catch (e) {}
 }
 async function simpanPengaturan() {
@@ -179,7 +222,7 @@ function exportExcel() {
   const table = document.getElementById('tbl-rekap').outerHTML;
   const html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
     + '<head><meta charset="UTF-8"></head><body>'
-    + `<h3>Rekap Absensi ${bulan} — Kelas ${kelas}</h3>` + table + '</body></html>';
+    + `<h3>Rekap Absensi ${fmtBulan(bulan)} — Kelas ${kelas}</h3>` + table + '</body></html>';
   const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -188,6 +231,7 @@ function exportExcel() {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
+setTanggalHariIni();
 if (GURU) enterApp();
 ['in-nip', 'in-pass'].forEach(id => document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') masuk(); }));
 
