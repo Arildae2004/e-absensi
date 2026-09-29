@@ -43,7 +43,8 @@ input:focus,select:focus{outline:2px solid #1d4ed8;outline-offset:-1px;border-co
 main{padding:22px 26px;max-width:1120px;min-width:0}
 .topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:18px;flex-wrap:wrap}
 .topbar h1{margin:0;font-size:20px} .topbar p{margin:4px 0 0;color:#6b7280;font-size:13px}
-.top-right{display:flex;gap:8px} .top-right input,.top-right select{width:auto}
+.top-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap} .top-right input,.top-right select{width:auto}
+.top-group{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .search{min-width:200px;background:#fff}
 
 /* PANELS */
@@ -72,6 +73,27 @@ tr:last-child td{border-bottom:0}
 .pill{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:#eef0f3;color:#3b4453}
 .pill.h{background:#e6f4ea;color:#166534} .pill.i{background:#fef3c7;color:#92400e}
 .pill.s{background:#ffedd5;color:#9a3412} .pill.a{background:#fee2e2;color:#991b1b}
+
+/* BADGE STATUS (rekap & ringkasan) — hijau baik, kuning pantau, merah perhatian, abu belum ada data */
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap;background:#f1f2f4;color:#3b4453}
+.badge.b-h{background:#e6f4ea;color:#166534}
+.badge.b-i{background:#fef3c7;color:#92400e}
+.badge.b-s{background:#ffedd5;color:#9a3412}
+.badge.b-a{background:#fee2e2;color:#991b1b}
+.badge.b-kosong{background:#f1f2f4;color:#6b7280;font-weight:500}
+
+/* baris tanpa data: dibuat redup supaya tidak terlihat "rusak" */
+tr.row-empty td{background:#fbfcfd;color:#9aa1ad}
+tr.row-empty td b{color:#6b7280;font-weight:600}
+.link-aksi{background:none;border:0;padding:0;margin-left:8px;color:#1d4ed8;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.link-aksi:hover{text-decoration:underline}
+
+/* legenda singkatan kolom di bawah tabel rekap */
+.legend{margin:0;padding:10px 16px;border-top:1px solid #eef0f3;background:#fafbfc;font-size:12.5px;color:#6b7280}
+.legend b{color:#3b4453;font-weight:600}
+.legend i{font-style:normal;color:#c7ccd4;margin:0 2px}
+/* header kolom berisi tooltip singkatan */
+th[title]{cursor:help}
 
 /* week */
 .week{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;padding:14px 16px 4px}
@@ -120,6 +142,13 @@ body{overflow-x:hidden}
   .stats{grid-template-columns:1fr 1fr;gap:8px}
   .stat b{font-size:20px}
   .top-right{width:100%} .top-right .search{flex:1;min-width:0}
+  /* filter utama + tombol aksi menyebar rapi di HP */
+  .top-right>*{flex:1;min-width:0}
+  .top-right .top-group{width:100%}
+  .top-right .top-group input{flex:1;min-width:0}
+  .top-right .top-group button{flex:1;padding:11px 8px}
+  .legend{font-size:12px;padding:10px 12px}
+  .link-aksi{display:block;margin:6px 0 0}
   .sidebar{padding:10px}
   .brand{padding:2px 4px 8px}
   .menu-label{display:none}

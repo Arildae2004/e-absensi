@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="E-Absensi" />
-<link rel="stylesheet" href="style.css?v=2" />
+<link rel="stylesheet" href="style.css?v=3" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -71,6 +71,12 @@
       <div class="top-right">
         <select id="flt-kelas" onchange="muatSemua()"><option>X-1</option><option>XI IPA 1</option><option>XII IPS 1</option><option>SEMUA</option></select>
         <input id="flt-tgl" type="date" onchange="muatSemua()" />
+        <!-- filter bulan + tombol aksi dikelompokkan bersama filter lain (hanya saat halaman Rekap) -->
+        <div id="top-rekap" class="top-group hidden">
+          <input id="rekap-bulan" type="month" onchange="muatRekap()" title="Periode rekap bulanan" />
+          <button class="b-ghost" onclick="exportExcel()">Export Excel</button>
+          <button class="b-ghost" onclick="window.print()">Cetak</button>
+        </div>
       </div>
     </header>
 
@@ -134,10 +140,14 @@
       <div class="panel">
         <div class="panel-h wrap">
           <div><h3>Rekap Bulanan</h3><p class="sub2" id="rekap-sub">–</p></div>
-          <div class="tools"><input id="rekap-bulan" type="month" onchange="muatRekap()" /><button class="b-ghost" onclick="exportExcel()">Export Excel</button><button class="b-ghost" onclick="window.print()">Cetak</button></div>
+          <div class="tools"><input id="rekap-q" class="search" placeholder="Cari nama siswa…" oninput="renderRekap()" /></div>
         </div>
-        <div class="table-scroll"><table id="tbl-rekap"><thead><tr><th>Nama</th><th>H</th><th>I</th><th>S</th><th>A</th><th>%</th><th>Status</th></tr></thead>
+        <div class="table-scroll"><table id="tbl-rekap"><thead><tr>
+          <th>Nama</th><th title="Hadir">H</th><th title="Izin">I</th><th title="Sakit">S</th><th title="Alpa">A</th><th title="Persentase kehadiran">%</th><th title="Status kehadiran bulan ini">Status</th>
+        </tr></thead>
         <tbody id="tb-rekap"><tr><td colspan="7" class="muted2">Memuat…</td></tr></tbody></table></div>
+        <!-- legenda singkatan kolom -->
+        <p class="legend"><b>H</b> Hadir <i>•</i> <b>I</b> Izin <i>•</i> <b>S</b> Sakit <i>•</i> <b>A</b> Alpa <i>•</i> <b>%</b> Persentase kehadiran</p>
       </div>
     </section>
 
@@ -155,6 +165,6 @@
 </div>
 
 <script src="xlsx-mini.js?v=1"></script>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

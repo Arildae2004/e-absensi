@@ -25,6 +25,27 @@ function kelasId($conn, $nama) {
   $r = $st->get_result()->fetch_assoc();
   return $r['id'] ?? null;
 }
+// Nama disimpan dalam bentuk Title Case supaya konsisten di semua tampilan
+// ("ARIL SAFITRI" -> "Aril Safitri", "ahmad fauzi" -> "Ahmad Fauzi")
+// Hanya huruf ASCII yang diubah; byte non-ASCII (UTF-8) dibiarkan apa adanya.
+function titleCaseNama($s) {
+  $s = trim(preg_replace('/\s+/', ' ', $s));
+  if ($s === '') return $s;
+  $out = '';
+  $prev = ' ';
+  $len = strlen($s);
+  for ($i = 0; $i < $len; $i++) {
+    $ch = $s[$i];
+    if (preg_match('/[a-zA-Z]/', $ch)) {
+      $awalKata = ($prev === ' ' || $prev === '-' || $prev === "'");
+      $out .= $awalKata ? strToUpper($ch) : strToLower($ch);
+    } else {
+      $out .= $ch;
+    }
+    $prev = $ch;
+  }
+  return $out;
+}
 
 // ---------- LOGIN ----------
 if ($action === 'login') {
@@ -71,7 +92,7 @@ if ($action === 'siswa') {
 
 // ---------- SIMPAN SISWA ----------
 if ($action === 'siswa_save') {
-  $nis = trim($body['nis'] ?? ''); $nm = trim($body['nama'] ?? '');
+  $nis = trim($body['nis'] ?? ''); $nm = titleCaseNama($body['nama'] ?? '');
   $jk = $body['jk'] ?? 'L'; $hp = trim($body['hp'] ?? ''); $kls = $body['kelas'] ?? '';
   $id = $body['id'] ?? null;
   if (!$nis || !$nm || !$kls) out(['ok'=>false,'msg'=>'NIS, nama, kelas wajib'], 400);
